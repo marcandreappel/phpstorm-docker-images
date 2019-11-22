@@ -1,24 +1,9 @@
 version: '3.2'
 services:
-  sftp:
-    build: ./sftp-server
-    ports:
-     - "3022:22"
-    volumes:
-     - /tmp:/home/jetbrains
-     - ~/.ssh/id_rsa.pub:/home/jetbrains/.ssh/keys/id_rsa.pub:ro
-    command: jetbrains:jetbrains:1001
-  sftp-ki: # Similar to sftp but only keyboard-interactive auth is allowed
-    build: ./sftp-server-ki
-    ports:
-     - "3122:22"
-    volumes:
-     - /tmp:/home/jetbrains
-    command: jetbrains:jetbrains:1001
   webserver:
-    build: ./php-73-apache-xdebug-27
+    build: ./php-73-apache-xdebug-28
     ports:
-      - "6080:80"
+      - "80:80"
     volumes:
       - ./html:/var/www/html
     environment:
@@ -30,61 +15,3 @@ services:
         - "33306:3306"
       volumes:
         - ./data:/var/lib/mysql
-  ftp:
-    build: ./ftp
-    volumes:
-      - /tmp:/home/virtual/jetbrains/share
-    environment:
-      PASV_ADDRESS: 192.168.2.154
-      VSFTPD_USER_1: "jetbrains:jetbrains::"
-    ports:
-      - "21:21"
-      - "30000-30009:30000-30009"
-  ftps:
-    build: ./ftps
-    volumes:
-          - /tmp:/home/virtual/jetbrains/share
-    environment:
-    #change the line below with your IP address
-      PASV_ADDRESS: 192.168.2.154
-      VSFTPD_USER_1: "jetbrains:jetbrains::"
-      PASV_MIN_PORT: 30010
-      PASV_MAX_PORT: 30019
-    ports:
-      - "23:21"
-      - "30010-30019:30010-30019"
-  pure-ftpd:
-    build: ./pure-ftpd
-    volumes:
-      - /tmp:/home/ftpusers/jetbrains/
-    ports:
-      - "24:21"
-      - "30020-30029:30020-30029"
-    environment:
-      #change the line below with your IP address
-      PASV_ADDRESS: 192.168.2.154
-  pro-ftpd:
-      build:
-        context: ./proftpd
-        args:
-          #change the line below with your IP address
-          PASV_ADDRESS: 172.27.208.148
-          USER_ID: 1000
-          PASSWD: jetbrains
-      volumes:
-        - /tmp:/home/FTP-shared
-      ports:
-        - "25:21"
-        - "30040-30049:30040-30049"
-      extra_hosts:
-       - "moby:127.0.0.1"
-  squid:
-    build: ./squid
-    container_name: squid
-    hostname: squid
-    ports:
-      # When connecting to services, use the real host:port, not the mapped ones
-      # e.g. webserver:80, not localhost:6080
-      - "6128:3128" # HTTP proxy with no authentication
-      - "6129:3129" # HTTP proxy with authentication, jetbrains:jetbrains
-    command: "squid -N -d1"
